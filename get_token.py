@@ -4,6 +4,7 @@ import os
 import base64
 from binascii import Error as BinasciiError
 from typing import Optional
+import logging
 
 from dotenv import load_dotenv
 from gigachat import GigaChat
@@ -11,6 +12,8 @@ from gigachat import GigaChat
 
 # Load variables from a local .env file if present
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 # Supported environment variable names for the API key
 ENV_KEYS = ("GIGACHAT_API_KEY", "GIGACHAT_CREDENTIALS", "GIGACHAT_AUTHORIZATION")
@@ -56,6 +59,7 @@ def _ensure_base64_credentials(value: str) -> str:
     # Try as-is
     try:
         base64.b64decode(normalized, validate=True)
+        logger.debug("Credentials accepted as base64 without changes")
         return normalized
     except Exception:
         pass
@@ -64,6 +68,7 @@ def _ensure_base64_credentials(value: str) -> str:
     padded = _pad(normalized)
     try:
         base64.b64decode(padded, validate=True)
+        logger.debug("Credentials validated after padding added")
         return padded
     except Exception:
         pass
@@ -72,6 +77,7 @@ def _ensure_base64_credentials(value: str) -> str:
     converted = _to_b64(normalized)
     try:
         base64.b64decode(converted, validate=True)
+        logger.debug("Credentials validated after base64url to base64 conversion")
         return converted
     except Exception:
         pass
@@ -80,6 +86,7 @@ def _ensure_base64_credentials(value: str) -> str:
     converted_padded = _pad(converted)
     try:
         base64.b64decode(converted_padded, validate=True)
+        logger.debug("Credentials validated after conversion and padding")
         return converted_padded
     except Exception:
         raise ValueError(
@@ -104,12 +111,19 @@ def get_gigachat_token(
         ValueError: If no API key is provided or found in the environment.
     """
 
+    logger.debug("get_gigachat_token: start")
+
     # 1) Provided explicitly
     api_key = credentials
 
     # 2) Env variables including possible 'Authorization: Basic ...'
     if not api_key:
-        api_key = next((os.getenv(k) for k in ENV_KEYS if os.getenv(k)), None)
+        for k in ENV_KEYS:
+            v = os.getenv(k)
+            if v:
+                api_key = v
+                logger.debug("Using credentials from env: %s", k)
+                break
 
     # 3) Build from client id/secret when available
     if not api_key:
@@ -118,6 +132,7 @@ def get_gigachat_token(
         if client_id and client_secret:
             pair = f"{client_id}:{client_secret}".encode("utf-8")
             api_key = base64.b64encode(pair).decode("ascii")
+            logger.debug("Built credentials from GIGACHAT_CLIENT_ID/GIGACHAT_CLIENT_SECRET")
 
     if not api_key:
         raise ValueError(
@@ -128,6 +143,7 @@ def get_gigachat_token(
 
     # Normalize and validate base64 value
     api_key = _ensure_base64_credentials(api_key)
+    logger.debug("Credentials normalized and validated (len=%d)", len(api_key))
 
     # SSL options from args or env
     if verify_ssl_certs is None:
@@ -141,16 +157,37 @@ def get_gigachat_token(
             local_ca = os.path.join(os.path.dirname(__file__), "russian_trusted_root_ca.cer")
             if os.path.exists(local_ca):
                 ca_bundle_file = local_ca
+    logger.debug(
+        "SSL options: verify_ssl_certs=%s, ca_bundle_file=%s (exists=%s)",
+        verify_ssl_certs,
+        ca_bundle_file,
+        os.path.exists(ca_bundle_file) if ca_bundle_file else False,
+    )
 
     giga = GigaChat(
         credentials=api_key,
         verify_ssl_certs=verify_ssl_certs,
         ca_bundle_file=ca_bundle_file,
     )
-    response = giga.get_token()
+    try:
+        response = giga.get_token()
+        logger.info("Token received successfully")
+    except Exception:
+        logger.exception("Failed to obtain GigaChat token")
+        raise
     return response
 
 
 if __name__ == "__main__":
+    # Basic on-demand logging config via env: GIGACHAT_LOG_LEVEL=DEBUG|INFO|...
+    log_level = os.getenv("GIGACHAT_LOG_LEVEL")
+    if log_level:
+        try:
+            logging.basicConfig(
+                level=getattr(logging, log_level.upper(), logging.INFO),
+                format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+            )
+        except Exception:
+            logging.basicConfig(level=logging.INFO)
     # Allows quick manual run: `python get_token.py`
     print(get_gigachat_token())
