@@ -49,6 +49,19 @@ YANDEX_GPT_MODEL=yandexgpt
 YANDEX_GPT_TEMPERATURE=0.5
 ```
 
+### `Universal_bot.py` - Универсальный Telegram-бот (GigaChat + YandexGPT)
+Бот-помощник, который позволяет переключаться между моделями GigaChat и YandexGPT в одном Telegram-боте.
+
+**Особенности:**
+- Переключение моделей командами: `/model`, `/model gigachat`, `/model yandex`, `/gigachat`, `/yandex`.
+- Перед каждым запросом добавляется системный промпт: "Ты вежливый и профессиональный личный помощник, работающий в Telegram.".
+- Обрабатывает только текстовые сообщения.
+- Очищает Markdown/HTML/LaTeX-разметку перед отправкой ответа пользователю.
+- Все ключи берутся из переменных окружения; добавлено логирование.
+
+**Переменные окружения:**
+Используются те же переменные, что и для отдельных ботов (`TELEGRAM_BOT_TOKEN`, `GIGACHAT_*`, `YANDEX_*`). Дополнительно можно задать `UNIBOT_LOG_LEVEL` (например, `INFO`, `DEBUG`).
+
 ### `generate-deferred.py` - Тестовый скрипт для YandexGPT
 Исходный скрипт для тестирования взаимодействия с YandexGPT через консоль.
 
@@ -112,6 +125,8 @@ YANDEX_GPT_TEMPERATURE=0.5
 TELEGRAM_BOT_TOKEN=<токен_бота_от_BotFather>
 ```
 
+Для Universal‑бота поддерживается лог‑уровень через `UNIBOT_LOG_LEVEL` (по умолчанию INFO).
+
 ## Запуск
 
 ### GigaChat Bot
@@ -123,6 +138,17 @@ python giga_bot.py
 ```bash
 python Yandex_bot.py
 ```
+
+### Universal Bot (переключение между GigaChat и YandexGPT)
+```bash
+python Universal_bot.py
+```
+Бот поддерживает команды:
+- `/model` — показать текущую модель и доступность;
+- `/model gigachat` — переключиться на GigaChat;
+- `/model yandex` — переключиться на YandexGPT;
+- `/gigachat` — быстрый переключатель на GigaChat;
+- `/yandex` — быстрый переключатель на YandexGPT.
 
 ### Тестовый скрипт
 ```bash
