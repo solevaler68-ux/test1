@@ -1,3 +1,4 @@
 .env
 russian_trusted_root_ca.cer
 __pycache__/
+bot.log
