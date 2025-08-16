@@ -840,8 +840,8 @@ def main() -> None:
         chat_id = call.message.chat.id
         text = render_context_history(chat_id, model, limit_pairs)
         # Add a header with a neutral context indicator
-        header = f"📚 История ({get_model_emoji(model)} {get_model_display_name(model)})\n"
-        full_text = header + "\n" + text
+        header = f"История ({get_model_display_name(model)})\n"
+        full_text = header + "\n" + _strip_markdown(text)
         # Inline keyboard: clear context for this model (only if not empty)
         ctx_list = user_contexts.get(chat_id, {}).get(model, [])
         has_context = bool(ctx_list)
@@ -849,13 +849,13 @@ def main() -> None:
         if has_context:
             kb = telebot.types.InlineKeyboardMarkup(row_width=1)
             kb.add(telebot.types.InlineKeyboardButton(f"❌Очистить контекст {get_model_display_name(model)}?", callback_data=f"ctxclear_{model}"))
-        # Render with basic Markdown; attach keyboard to first chunk
+        # Send as plain text (no markdown parsing); attach keyboard to first chunk
         chunks = split_message(full_text)
         for idx, chunk in enumerate(chunks):
             if idx == 0 and kb is not None:
-                bot.send_message(chat_id, chunk, parse_mode='Markdown', reply_markup=kb)
+                bot.send_message(chat_id, chunk, parse_mode=None, reply_markup=kb)
             else:
-                bot.send_message(chat_id, chunk, parse_mode='Markdown')
+                bot.send_message(chat_id, chunk, parse_mode=None)
         bot.answer_callback_query(call.id)
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith("ctxclear_"))

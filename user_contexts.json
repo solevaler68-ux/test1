@@ -1,1 +1,22 @@
-{}
+{
+  "6065739246": {
+    "gigachat": [
+      {
+        "role": "user",
+        "content": "переведи текст\nDocker Subscription Service Agreement\nBy selecting accept, you agree to the Subscription Service Agreement⁠, the Docker Data Processing Agreement⁠, the Data Privacy Policy⁠ and the Docker AI Supplemental Terms⁠.\n\nCommercial use of Docker Desktop at a company of more than 250 employees OR more than $10 million in annual revenue requires a paid subscription (Pro, Team, or Business). See subscription details⁠"
+      },
+      {
+        "role": "assistant",
+        "content": "**Перевод текста:**\n\n### Соглашение сервиса подписки Docker\n\nВыбирая вариант **«согласен»**, вы подтверждаете своё согласие с соглашением **«Подписка Docker»**, договором **об обработке данных Docker**, политикой **защиты персональных данных** и дополнительными условиями **Docker AI**.\n\nДля коммерческого использования Docker Desktop в компании численностью свыше **250 сотрудников** либо доходом свыше **$10 млн** в год необходима платная подписка (**Pro, Team или Business**). Подробности подписки указаны далее."
+      },
+      {
+        "role": "user",
+        "content": "и это\nWelcome to Docker\nUsing Docker for work?\n\nWe recommend signing in with your work email address."
+      },
+      {
+        "role": "assistant",
+        "content": "**Перевод второго контекста:**\n\n***\n\nПриветствую в Docker  \nИспользуешь Docker для работы?  \n\nРекомендуем войти через рабочий электронный адрес."
+      }
+    ]
+  }
+}
